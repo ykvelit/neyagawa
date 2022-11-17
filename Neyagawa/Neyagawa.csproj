@@ -1,0 +1,251 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MinimumVisualStudioVersion>17.0</MinimumVisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectTypeGuids>{82b43b9b-a64c-4715-b499-d71e9ca2bd60};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <ProjectGuid>{6C20B18D-BB48-409D-BA12-8BBCE8A03444}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Neyagawa</RootNamespace>
+    <AssemblyName>Neyagawa</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <UseCodebase>true</UseCodebase>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>true</CopyOutputSymbolsToOutputDirectory>
+    <StartAction>Program</StartAction>
+    <StartProgram Condition="'$(DevEnvDir)' != ''">$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix Exp</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Core\Assets\AssetFactory.cs" />
+    <Compile Include="Core\Assets\IAsset.cs" />
+    <Compile Include="Core\Assets\PropertyTesterAsset.cs" />
+    <Compile Include="Core\Assets\TargetAsset.cs" />
+    <Compile Include="Core\CoreGenerator.cs" />
+    <Compile Include="Core\Frameworks\Assertion\FluentAssertionFramework.cs" />
+    <Compile Include="Core\Frameworks\FrameworkSet.cs" />
+    <Compile Include="Core\Frameworks\FrameworkSetFactory.cs" />
+    <Compile Include="Core\Frameworks\IAssertionFramework.cs" />
+    <Compile Include="Core\Frameworks\IClassModelEvaluator.cs" />
+    <Compile Include="Core\Frameworks\IExtendedTestFramework.cs" />
+    <Compile Include="Core\Frameworks\IFrameworkSet.cs" />
+    <Compile Include="Core\Frameworks\IMockingFramework.cs" />
+    <Compile Include="Core\Frameworks\ITestFramework.cs" />
+    <Compile Include="Core\Frameworks\ITestMethodFactory.cs" />
+    <Compile Include="Core\Frameworks\Mocking\MockingHelper.cs" />
+    <Compile Include="Core\Frameworks\Mocking\MoqMockingFramework.cs" />
+    <Compile Include="Core\Frameworks\Test\BaseTestFramework.cs" />
+    <Compile Include="Core\Frameworks\Test\XUnitTestFramework.cs" />
+    <Compile Include="Core\Helpers\AssignmentValueHelper.cs" />
+    <Compile Include="Core\Helpers\AutoFixtureHelper.cs" />
+    <Compile Include="Core\Helpers\CelebrationGenerator.cs" />
+    <Compile Include="Core\Helpers\ConstructorFieldAssignmentExtractor.cs" />
+    <Compile Include="Core\Helpers\ContentCleaner.cs" />
+    <Compile Include="Core\Helpers\CSharpKeywordIdentifier.cs" />
+    <Compile Include="Core\Helpers\DetectedGenerationOptions.cs" />
+    <Compile Include="Core\Helpers\EnumerableExtensions.cs" />
+    <Compile Include="Core\Helpers\FrameworkDetection.cs" />
+    <Compile Include="Core\Helpers\FrameworkSetHelper.cs" />
+    <Compile Include="Core\Helpers\Generate.cs" />
+    <Compile Include="Core\Helpers\GenerationContext.cs" />
+    <Compile Include="Core\Helpers\GenerationStatistics.cs" />
+    <Compile Include="Core\Helpers\IGenerationContext.cs" />
+    <Compile Include="Core\Helpers\IGenerationStatistics.cs" />
+    <Compile Include="Core\Helpers\Ignore.cs" />
+    <Compile Include="Core\Helpers\IMessageLogger.cs" />
+    <Compile Include="Core\Helpers\InertLogger.cs" />
+    <Compile Include="Core\Helpers\InvocationExtractor.cs" />
+    <Compile Include="Core\Helpers\MethodSymbolExtensions.cs" />
+    <Compile Include="Core\Helpers\MockHelper.cs" />
+    <Compile Include="Core\Helpers\NameExtractor.cs" />
+    <Compile Include="Core\Helpers\NamespaceTransform.cs" />
+    <Compile Include="Core\Helpers\ParameterModelComparer.cs" />
+    <Compile Include="Core\Helpers\SectionedMethodHandler.cs" />
+    <Compile Include="Core\Helpers\StringExtensions.cs" />
+    <Compile Include="Core\Helpers\SymbolExtensions.cs" />
+    <Compile Include="Core\Helpers\TargetNameTransform.cs" />
+    <Compile Include="Core\Helpers\TestableItemExtractor.cs" />
+    <Compile Include="Core\Helpers\TypeHelper.cs" />
+    <Compile Include="Core\Helpers\TypeInfoExtensions.cs" />
+    <Compile Include="Core\Models\ClassDependencyMap.cs" />
+    <Compile Include="Core\Models\ClassModel.cs" />
+    <Compile Include="Core\Models\ConstructorModel.cs" />
+    <Compile Include="Core\Models\DependencyAccessMap.cs" />
+    <Compile Include="Core\Models\GenerationResult.cs" />
+    <Compile Include="Core\Models\IConstructorModel.cs" />
+    <Compile Include="Core\Models\IIndexerModel.cs" />
+    <Compile Include="Core\Models\IInterfaceModel.cs" />
+    <Compile Include="Core\Models\IMethodModel.cs" />
+    <Compile Include="Core\Models\IndexerModel.cs" />
+    <Compile Include="Core\Models\InterfaceModel.cs" />
+    <Compile Include="Core\Models\INugetPackageReference.cs" />
+    <Compile Include="Core\Models\IOperatorModel.cs" />
+    <Compile Include="Core\Models\IPropertyModel.cs" />
+    <Compile Include="Core\Models\ITestableModel.cs" />
+    <Compile Include="Core\Models\ITypeSymbolProvider.cs" />
+    <Compile Include="Core\Models\MethodModel.cs" />
+    <Compile Include="Core\Models\ModelGenerationContext.cs" />
+    <Compile Include="Core\Models\OperatorModel.cs" />
+    <Compile Include="Core\Models\ParameterModel.cs" />
+    <Compile Include="Core\Models\PropertyModel.cs" />
+    <Compile Include="Core\Models\ReferencedAssembly.cs" />
+    <Compile Include="Core\Models\TestableModel.cs" />
+    <Compile Include="Core\Models\TypeSymbolProvider.cs" />
+    <Compile Include="Core\Options\Editing\TargetSelectionRegister.cs" />
+    <Compile Include="Core\Options\FallbackTargetFindingMethod.cs" />
+    <Compile Include="Core\Options\IGenerationOptions.cs" />
+    <Compile Include="Core\Options\INamingOptions.cs" />
+    <Compile Include="Core\Options\INamingProvider.cs" />
+    <Compile Include="Core\Options\IStrategyOptions.cs" />
+    <Compile Include="Core\Options\IUnitTestGeneratorOptions.cs" />
+    <Compile Include="Core\Options\MockingFrameworkType.cs" />
+    <Compile Include="Core\Options\NameResolver.cs" />
+    <Compile Include="Core\Options\NamingContext.cs" />
+    <Compile Include="Core\Options\NamingProvider.cs" />
+    <Compile Include="Core\Options\TestFrameworkTypes.cs" />
+    <Compile Include="Core\Options\UnitTestGeneratorOptions.cs" />
+    <Compile Include="Core\Options\UserInterfaceModes.cs" />
+    <Compile Include="Core\Strategies\ClassDecoration\ClassDecorationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\ClassDecoration\IClassDecorationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassDecoration\RequiresStaGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassGeneration\AbstractClassGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassGeneration\ClassGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\ClassGeneration\IClassGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassGeneration\StandardClassGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassGeneration\StaticClassGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\CanConstructMultiConstructorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\CanConstructNoConstructorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\CanConstructSingleConstructorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\CanInitializeGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\ClassLevelGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\NullParameterCheckConstructorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\NullPropertyCheckInitializerGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\StringParameterCheckConstructorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ClassLevelGeneration\StringPropertyCheckInitializerGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\IGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\IndexerGeneration\IndexerGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\IndexerGeneration\ReadOnlyIndexerGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\IndexerGeneration\ReadWriteIndexerGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\IndexerGeneration\WriteOnlyIndexerGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\InterfaceGeneration\ComparableGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\InterfaceGeneration\EnumerableGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\InterfaceGeneration\EquatableGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\InterfaceGeneration\InterfaceGenerationStrategyBase.cs" />
+    <Compile Include="Core\Strategies\InterfaceGeneration\InterfaceGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\ItemGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\MethodGeneration\CanCallMethodGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\MethodGeneration\MappingMethodGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\MethodGeneration\MethodGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\MethodGeneration\NullParameterCheckMethodGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\MethodGeneration\StringParameterCheckMethodGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\OperatorGeneration\CanCallOperatorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\OperatorGeneration\NullParameterCheckOperatorGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\OperatorGeneration\OperatorGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\MultiConstructorInitializedPropertyGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\NotifyPropertyChangedGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\PropertyGenerationStrategyFactory.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\ReadOnlyPropertyGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\ReadWritePropertyGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\SingleConstructorInitializedPropertyGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\PropertyGeneration\WriteOnlyPropertyGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\ArrayFactory.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\BrushFactory.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\EnumFactory.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\IValueGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\SimpleValueGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\TypedValueGenerationStrategy.cs" />
+    <Compile Include="Core\Strategies\ValueGeneration\ValueGenerationStrategyFactory.cs" />
+    <Compile Include="Commands\GenerateUnitTestsCommand.cs" />
+    <Compile Include="Commands\GenerationItem.cs" />
+    <Compile Include="Helper\AggregateLogger.cs" />
+    <Compile Include="Helper\Attempt.cs" />
+    <Compile Include="Helper\CodeGenerator.cs" />
+    <Compile Include="Helper\FindTargetStatus.cs" />
+    <Compile Include="Helper\OptionsResolver.cs" />
+    <Compile Include="Helper\OutputWindowMessageLogger.cs" />
+    <Compile Include="Helper\ProjectItemModel.cs" />
+    <Compile Include="Helper\ProjectMapping.cs" />
+    <Compile Include="Helper\ProjectMappingFactory.cs" />
+    <Compile Include="Helper\SolutionUtilities.cs" />
+    <Compile Include="Helper\StatusBarMessageLogger.cs" />
+    <Compile Include="Helper\TargetFinder.cs" />
+    <Compile Include="Helper\VsMessageBox.cs" />
+    <Compile Include="Helper\VsProjectHelper.cs" />
+    <Compile Include="INeyagawaPackage.cs" />
+    <Compile Include="Options\GenerationOptions.cs" />
+    <Compile Include="Options\NamingOptions.cs" />
+    <Compile Include="Options\StrategyOptions.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="NeyagawaPackage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="source.extension.vsixmanifest">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis">
+      <Version>4.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServices">
+      <Version>4.0.1</Version>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.SDK" Version="17.0.31902.203" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.1.4054" />
+  </ItemGroup>
+  <ItemGroup>
+    <VSCTCompile Include="NeyagawaPackage.vsct">
+      <ResourceName>Menus.ctmenu</ResourceName>
+    </VSCTCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\GenerateUnitTestsCommand.png" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

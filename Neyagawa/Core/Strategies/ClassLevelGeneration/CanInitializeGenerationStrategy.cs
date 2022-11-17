@@ -1,0 +1,71 @@
+﻿namespace Neyagawa.Core.Strategies.ClassLevelGeneration
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
+
+    using Neyagawa.Core.Frameworks;
+    using Neyagawa.Core.Helpers;
+    using Neyagawa.Core.Models;
+    using Neyagawa.Core.Options;
+
+    public class CanInitializeGenerationStrategy : IGenerationStrategy<ClassModel>
+    {
+        private readonly IFrameworkSet _frameworkSet;
+
+        public CanInitializeGenerationStrategy(IFrameworkSet frameworkSet)
+        {
+            _frameworkSet = frameworkSet ?? throw new ArgumentNullException(nameof(frameworkSet));
+        }
+
+        public bool IsExclusive => false;
+
+        public int Priority => 1;
+
+        public Func<IStrategyOptions, bool> IsEnabled => x => x.InitializerChecksAreEnabled;
+
+        public bool CanHandle(ClassModel method, ClassModel model)
+        {
+            if (method is null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (model is null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (model.DefaultConstructor != null || model.IsStatic)
+            {
+                return false;
+            }
+
+            return model.Properties.Any(x => x.HasInit);
+        }
+
+        public IEnumerable<SectionedMethodHandler> Create(ClassModel method, ClassModel model, NamingContext namingContext)
+        {
+            if (method is null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (model is null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            var generatedMethod = _frameworkSet.CreateTestMethod(_frameworkSet.NamingProvider.CanInitialize, namingContext, false, false, "Checks that instance initialization works.");
+
+            generatedMethod.Act(Generate.ImplicitlyTypedVariableDeclaration("instance", model.GetObjectCreationExpression(_frameworkSet, false)));
+
+            generatedMethod.Assert(_frameworkSet.AssertionFramework.AssertNotNull(SyntaxFactory.IdentifierName("instance")));
+
+            yield return generatedMethod;
+        }
+    }
+}

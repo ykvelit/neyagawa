@@ -1,0 +1,203 @@
+﻿namespace Neyagawa.Core.Strategies.MethodGeneration
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+
+    using Microsoft.CodeAnalysis;
+    using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+    using Neyagawa.Core.Frameworks;
+    using Neyagawa.Core.Helpers;
+    using Neyagawa.Core.Models;
+    using Neyagawa.Core.Options;
+
+    public class MappingMethodGenerationStrategy : IGenerationStrategy<IMethodModel>
+    {
+        private readonly IFrameworkSet _frameworkSet;
+
+        public MappingMethodGenerationStrategy(IFrameworkSet frameworkSet)
+        {
+            _frameworkSet = frameworkSet ?? throw new ArgumentNullException(nameof(frameworkSet));
+        }
+
+        public bool IsExclusive => false;
+
+        public int Priority => 1;
+
+        public Func<IStrategyOptions, bool> IsEnabled => x => x.MappingMethodChecksAreEnabled;
+
+        public bool CanHandle(IMethodModel method, ClassModel model)
+        {
+            if (method is null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (model is null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            if (method.Node.Modifiers.Any(x => x.IsKind(SyntaxKind.AbstractKeyword)))
+            {
+                return false;
+            }
+
+            var returnTypeInfo = model.SemanticModel.GetTypeInfo(method.Node.ReturnType).Type;
+            if (returnTypeInfo == null || returnTypeInfo.SpecialType != SpecialType.None || method.Node.IsKind(SyntaxKind.IndexerDeclaration) || (returnTypeInfo.ToFullName() == typeof(Task).FullName && !(returnTypeInfo is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType)))
+            {
+                return false;
+            }
+
+            if (returnTypeInfo is INamedTypeSymbol namedType && namedType.IsGenericType && returnTypeInfo.ToFullName() == typeof(Task).FullName)
+            {
+                returnTypeInfo = namedType.TypeArguments[0];
+            }
+
+            var returnTypeMembers = GetProperties(returnTypeInfo);
+
+            foreach (var methodParameter in method.Parameters)
+            {
+                if (returnTypeMembers.ContainsKey(methodParameter.Name))
+                {
+                    return true;
+                }
+
+                if (methodParameter.TypeInfo.Type != null && methodParameter.TypeInfo.Type.SpecialType == SpecialType.None && !Equals(methodParameter.TypeInfo.Type, returnTypeInfo))
+                {
+                    var properties = GetProperties(methodParameter.TypeInfo.Type);
+                    if (properties.Any(x => returnTypeMembers.ContainsKey(x.Key)))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        private static Dictionary<string, bool> GetProperties(ITypeSymbol returnTypeInfo)
+        {
+            var properties = returnTypeInfo.GetMembers().Where(x => x.Kind == SymbolKind.Property && x.DeclaredAccessibility == Accessibility.Public).OfType<IPropertySymbol>().Where(x => !x.IsWriteOnly && !x.IsIndexer && x.ExplicitInterfaceImplementations.Length == 0);
+
+            var dictionary = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            foreach (var property in properties)
+            {
+                dictionary[property.Name] = property.Type.IsReferenceType;
+            }
+
+            return dictionary;
+        }
+
+        public IEnumerable<SectionedMethodHandler> Create(IMethodModel method, ClassModel model, NamingContext namingContext)
+        {
+            if (method is null)
+            {
+                throw new ArgumentNullException(nameof(method));
+            }
+
+            if (model is null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            var generatedMethod = _frameworkSet.CreateTestMethod(_frameworkSet.NamingProvider.PerformsMapping, namingContext, method.IsAsync, model.IsStatic, "Checks that the " + method.Name + " maps values from the input to the returned instance.");
+
+            var paramExpressions = new List<CSharpSyntaxNode>();
+
+            foreach (var parameter in method.Parameters)
+            {
+                if (parameter.Node.Modifiers.Any(x => x.Kind() == SyntaxKind.OutKeyword))
+                {
+                    paramExpressions.Add(SyntaxFactory.Argument(SyntaxFactory.DeclarationExpression(SyntaxFactory.IdentifierName("var"), SyntaxFactory.SingleVariableDesignation(parameter.Identifier))).WithRefKindKeyword(SyntaxFactory.Token(SyntaxKind.OutKeyword)));
+                }
+                else
+                {
+                    var defaultAssignmentValue = AssignmentValueHelper.GetDefaultAssignmentValue(parameter.TypeInfo, model.SemanticModel, _frameworkSet);
+
+                    if (parameter.TypeInfo.Type != null)
+                    {
+                        generatedMethod.Arrange(Generate.VariableDeclaration(parameter.TypeInfo.Type, _frameworkSet, parameter.Name, defaultAssignmentValue));
+                    }
+
+                    if (parameter.Node.Modifiers.Any(x => x.Kind() == SyntaxKind.RefKeyword))
+                    {
+                        paramExpressions.Add(SyntaxFactory.Argument(SyntaxFactory.IdentifierName(parameter.Name)).WithRefKindKeyword(SyntaxFactory.Token(SyntaxKind.RefKeyword)));
+                    }
+                    else
+                    {
+                        paramExpressions.Add(SyntaxFactory.IdentifierName(parameter.Name));
+                    }
+                }
+            }
+
+            var methodCall = method.Invoke(model, false, _frameworkSet, paramExpressions.ToArray());
+
+            bool requiresInstance = false;
+            if (method.IsAsync)
+            {
+                if (model.SemanticModel.GetSymbolInfo(method.Node.ReturnType).Symbol is INamedTypeSymbol type)
+                {
+                    requiresInstance = type.TypeArguments.Any();
+                }
+            }
+            else
+            {
+                requiresInstance = !method.IsVoid;
+            }
+
+            StatementSyntax bodyStatement;
+
+            if (requiresInstance)
+            {
+                bodyStatement = Generate.ImplicitlyTypedVariableDeclaration("result", methodCall);
+            }
+            else
+            {
+                bodyStatement = Generate.Statement(methodCall);
+            }
+
+            generatedMethod.Act(bodyStatement);
+
+            var returnTypeInfo = model.SemanticModel.GetTypeInfo(method.Node.ReturnType).Type;
+            if (returnTypeInfo == null || returnTypeInfo.SpecialType != SpecialType.None || method.Node.IsKind(SyntaxKind.IndexerDeclaration) || (returnTypeInfo.ToFullName() == typeof(Task).FullName && !(returnTypeInfo is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.IsGenericType)))
+            {
+                yield break;
+            }
+
+            if (returnTypeInfo is INamedTypeSymbol namedType && namedType.IsGenericType && returnTypeInfo.ToFullName() == typeof(Task).FullName)
+            {
+                returnTypeInfo = namedType.TypeArguments[0];
+            }
+
+            var returnTypeMembers = GetProperties(returnTypeInfo);
+
+            foreach (var methodParameter in method.Parameters)
+            {
+                if (returnTypeMembers.ContainsKey(methodParameter.Name))
+                {
+                    var returnTypeMember = returnTypeMembers.FirstOrDefault(x => string.Equals(x.Key, methodParameter.Name, StringComparison.OrdinalIgnoreCase));
+                    var resultProperty = Generate.MemberAccess("result", returnTypeMember.Key);
+                    generatedMethod.Assert(_frameworkSet.AssertionFramework.AssertEqual(resultProperty, SyntaxFactory.IdentifierName(methodParameter.Name), returnTypeMembers[methodParameter.Name]));
+                    continue;
+                }
+
+                if (methodParameter.TypeInfo.Type != null && methodParameter.TypeInfo.Type.SpecialType == SpecialType.None && !Equals(methodParameter.TypeInfo.Type, returnTypeInfo))
+                {
+                    var properties = GetProperties(methodParameter.TypeInfo.Type);
+                    foreach (var matchedSourceProperty in properties.Where(x => returnTypeMembers.ContainsKey(x.Key)))
+                    {
+                        var returnTypeMember = returnTypeMembers.FirstOrDefault(x => string.Equals(x.Key, matchedSourceProperty.Key, StringComparison.OrdinalIgnoreCase));
+                        var resultProperty = Generate.MemberAccess("result", returnTypeMember.Key);
+                        generatedMethod.Assert(_frameworkSet.AssertionFramework.AssertEqual(resultProperty, Generate.MemberAccess(methodParameter.Name, matchedSourceProperty.Key), matchedSourceProperty.Value));
+                    }
+                }
+            }
+
+            yield return generatedMethod;
+        }
+    }
+}

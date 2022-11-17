@@ -1,0 +1,72 @@
+﻿namespace Neyagawa.Core.Strategies.PropertyGeneration
+{
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using Microsoft.CodeAnalysis.CSharp;
+    using Microsoft.CodeAnalysis.CSharp.Syntax;
+
+    using Neyagawa.Core.Frameworks;
+    using Neyagawa.Core.Helpers;
+    using Neyagawa.Core.Models;
+    using Neyagawa.Core.Options;
+
+    public class WriteOnlyPropertyGenerationStrategy : IGenerationStrategy<IPropertyModel>
+    {
+        private readonly IFrameworkSet _frameworkSet;
+
+        public WriteOnlyPropertyGenerationStrategy(IFrameworkSet frameworkSet)
+        {
+            _frameworkSet = frameworkSet ?? throw new ArgumentNullException(nameof(frameworkSet));
+        }
+
+        public bool IsExclusive => false;
+
+        public int Priority => 2;
+
+        public Func<IStrategyOptions, bool> IsEnabled => x => x.PropertyChecksAreEnabled;
+
+        public bool CanHandle(IPropertyModel property, ClassModel model)
+        {
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            if (model is null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            return !property.HasGet && property.HasSet;
+        }
+
+        public IEnumerable<SectionedMethodHandler> Create(IPropertyModel property, ClassModel model, NamingContext namingContext)
+        {
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
+            var method = _frameworkSet.CreateTestMethod(_frameworkSet.NamingProvider.CanSet, namingContext, false, model.IsStatic, "Checks that the " + property.Name + " property can be written to.");
+            method.Emit(GetPropertyAssertionBodyStatements(property, model).ToArray());
+
+            yield return method;
+        }
+
+        private IEnumerable<StatementSyntax> GetPropertyAssertionBodyStatements(IPropertyModel property, ClassModel sourceModel)
+        {
+            var target = property.IsStatic ? sourceModel.TypeSyntax : sourceModel.TargetInstance;
+
+            var defaultAssignmentValue = AssignmentValueHelper.GetDefaultAssignmentValue(property.TypeInfo, sourceModel.SemanticModel, _frameworkSet);
+            yield return Generate.Statement(SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, property.Access(target), defaultAssignmentValue));
+            yield return _frameworkSet.AssertionFramework.AssertFail("Add your assertion here");
+        }
+    }
+}
